@@ -8,9 +8,11 @@ export default function GeneratorDetailModal({
   onOpenChecklist,
   onOpenCloseGenerator,
   todayActivities,
-  historicalLogs
+  historicalLogs,
+  generators,
+  setGenerators
 }) {
-  const [expectedDays, setExpectedDays] = useState(15);
+  const [expectedDays, setExpectedDays] = useState(generator?.expectedFutureDays ?? 15);
 
   if (!generator) return null;
 
@@ -143,7 +145,13 @@ export default function GeneratorDetailModal({
                     className="form-input"
                     style={{ width: '90px', padding: '6px 10px' }}
                     value={expectedDays}
-                    onChange={(e) => setExpectedDays(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setExpectedDays(val);
+                      if (setGenerators) {
+                        setGenerators(prev => prev.map(g => g.id === generator.id ? { ...g, expectedFutureDays: val } : g));
+                      }
+                    }}
                   />
                 </div>
 

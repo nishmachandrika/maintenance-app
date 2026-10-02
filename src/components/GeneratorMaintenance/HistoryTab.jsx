@@ -146,7 +146,7 @@ export default function HistoryTab({
         </select>
 
         <button className="btn btn-secondary" onClick={exportCSV} style={{ marginLeft: 'auto' }}>
-          <Download size={16} /> Export CSV
+          <Download size={16} /> Download
         </button>
       </div>
 

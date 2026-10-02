@@ -954,10 +954,16 @@ body {
 
 .gen-actions-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-top: auto;
   padding-top: 8px;
+}
+
+.gen-actions-row .btn-sm {
+  padding: 4px 8px;
+  font-size: 0.72rem;
 }
 
 /* Modals */
@@ -984,7 +990,7 @@ body {
   width: 100%;
   max-width: 680px;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
@@ -997,6 +1003,7 @@ body {
   align-items: center;
   justify-content: space-between;
   background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -1009,6 +1016,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .modal-footer {
@@ -1019,6 +1028,7 @@ body {
   justify-content: flex-end;
   gap: 12px;
   background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .form-group {

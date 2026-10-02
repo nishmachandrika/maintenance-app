@@ -1,19 +1,54 @@
 import React, { useState } from 'react';
 import { 
   Building2, CreditCard, Plus, Phone, Mail, Zap, CheckCircle2, Lock, 
-  ArrowLeft, ArrowRight, ShieldCheck, Landmark 
+  ArrowLeft, ArrowRight, ShieldCheck, Landmark, Trash2
 } from 'lucide-react';
 
 export default function SuppliersTab({
   suppliers,
+  setSuppliers,
   generators,
   paymentRequests,
   currentUser,
   onOpenAddSupplier,
-  onOpenCreatePayment
+  onOpenCreatePayment,
+  setGenerators
 }) {
   const [selectedSupplierObj, setSelectedSupplierObj] = useState(null);
   const [selectedBankId, setSelectedBankId] = useState('');
+  const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
+  const [newAccountData, setNewAccountData] = useState({
+    bankName: '',
+    accountNumber: '',
+    accountHolder: '',
+    ifscCode: '',
+    branch: ''
+  });
+  const [removedGens, setRemovedGens] = useState({});
+
+  const handleAddAccount = (e) => {
+    e.preventDefault();
+    if (!newAccountData.bankName || !newAccountData.accountNumber) return;
+    
+    const newAccount = {
+      id: `ba_${Date.now()}`,
+      ...newAccountData
+    };
+    
+    const updatedSupplier = {
+      ...selectedSupplierObj,
+      bankAccounts: [...selectedSupplierObj.bankAccounts, newAccount]
+    };
+    
+    if (setSuppliers) {
+      setSuppliers(prev => prev.map(s => s.id === updatedSupplier.id ? updatedSupplier : s));
+    }
+    
+    setSelectedSupplierObj(updatedSupplier);
+    setSelectedBankId(newAccount.id);
+    setIsAddAccountModalOpen(false);
+    setNewAccountData({ bankName: '', accountNumber: '', accountHolder: '', ifscCode: '', branch: '' });
+  };
 
   // Mask account number for non-admin supervisor users (Section 8)
   const formatAccountNumber = (accNo, isSupervisor) => {
@@ -32,6 +67,7 @@ export default function SuppliersTab({
 
     // Filter generators under this supplier
     const supGenerators = generators.filter(g => {
+      if (removedGens[g.id]) return false;
       if (isSupervisor && g.site !== assignedSite) return false;
       return g.supplierId === selectedSupplierObj.id || g.supplierName === selectedSupplierObj.name;
     });
@@ -47,6 +83,8 @@ export default function SuppliersTab({
     });
 
     const totalSupplierCost = genBreakdown.reduce((sum, item) => sum + item.amount, 0);
+    const grandTotalEstAmount = genBreakdown.reduce((sum, item) => sum + ((Number(item.gen.expectedFutureDays) || 0) * item.gen.costPerDay), 0);
+    const finalTotalPayout = totalSupplierCost + grandTotalEstAmount;
 
     // Active selected bank account
     const activeBankId = selectedBankId || selectedSupplierObj.bankAccounts[0]?.id;
@@ -57,7 +95,10 @@ export default function SuppliersTab({
         
         {/* Back Button & Header Bar */}
         <div className="filter-bar">
-          <button className="btn btn-secondary btn-sm" onClick={() => setSelectedSupplierObj(null)}>
+          <button className="btn btn-secondary btn-sm" onClick={() => {
+            setSelectedSupplierObj(null);
+            setRemovedGens({});
+          }}>
             <ArrowLeft size={16} /> Back to All Suppliers
           </button>
 
@@ -69,16 +110,16 @@ export default function SuppliersTab({
 
           <button 
             className="btn btn-primary btn-sm" 
-            onClick={() => onOpenCreatePayment(selectedSupplierObj)}
+            onClick={() => onOpenCreatePayment(selectedSupplierObj, finalTotalPayout)}
             style={{ marginLeft: 'auto' }}
           >
             <CreditCard size={14} /> Create Payment Request
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* Left Column: Supplier Contact & Linked Bank Accounts Selector */}
+          {/* Top Section: Supplier Contact & Linked Bank Accounts Selector */}
           <div className="table-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div>
               <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)' }}>{selectedSupplierObj.name}</h3>
@@ -96,7 +137,12 @@ export default function SuppliersTab({
                 <div style={{ fontSize: '0.82rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--accent-cyan)' }}>
                   Linked Bank Accounts Dropdown
                 </div>
-                <span className="badge badge-completed">{selectedSupplierObj.bankAccounts.length} Accounts Available</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="badge badge-completed">{selectedSupplierObj.bankAccounts.length} Accounts Available</span>
+                  <button className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '0.75rem' }} onClick={() => setIsAddAccountModalOpen(true)}>
+                    <Plus size={12} style={{ marginRight: '4px', display: 'inline' }} /> Add Account
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
@@ -144,7 +190,7 @@ export default function SuppliersTab({
             <button 
               className="btn btn-primary"
               style={{ width: '100%', padding: '11px', fontWeight: '700' }}
-              onClick={() => onOpenCreatePayment(selectedSupplierObj)}
+              onClick={() => onOpenCreatePayment(selectedSupplierObj, finalTotalPayout)}
             >
               <CreditCard size={16} /> Pay via Selected Account ({activeBank?.bankName})
             </button>
@@ -167,12 +213,16 @@ export default function SuppliersTab({
                     <th>Rate / Day</th>
                     <th>Work Days</th>
                     <th>Payable Amount</th>
+                    <th>Est. Days</th>
+                    <th>Est. Amount</th>
+                    <th>Total Amount</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {genBreakdown.length === 0 ? (
                     <tr>
-                      <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '20px' }}>
+                      <td colSpan="10" style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '20px' }}>
                         No active generators assigned to this supplier.
                       </td>
                     </tr>
@@ -189,6 +239,37 @@ export default function SuppliersTab({
                         <td style={{ fontWeight: '800', color: 'var(--accent-emerald)' }}>
                           ₹{item.amount.toLocaleString('en-IN')}
                         </td>
+                        <td style={{ width: '85px' }}>
+                          <input 
+                            type="number" 
+                            min="0"
+                            className="form-input"
+                            style={{ width: '70px', padding: '4px', fontSize: '0.85rem', textAlign: 'center' }}
+                            value={item.gen.expectedFutureDays || ''}
+                            onChange={(e) => {
+                              if (setGenerators) {
+                                setGenerators(prev => prev.map(g => g.id === item.gen.id ? { ...g, expectedFutureDays: e.target.value } : g));
+                              }
+                            }}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td style={{ fontWeight: '800', color: 'var(--accent-purple)' }}>
+                          ₹{((Number(item.gen.expectedFutureDays) || 0) * item.gen.costPerDay).toLocaleString('en-IN')}
+                        </td>
+                        <td style={{ fontWeight: '800', color: 'var(--accent-cyan)' }}>
+                          ₹{(item.amount + ((Number(item.gen.expectedFutureDays) || 0) * item.gen.costPerDay)).toLocaleString('en-IN')}
+                        </td>
+                        <td>
+                          <button 
+                            className="btn btn-outline btn-sm" 
+                            style={{ color: 'var(--accent-rose)', borderColor: 'transparent', padding: '4px' }}
+                            onClick={() => setRemovedGens({...removedGens, [item.gen.id]: true})}
+                            title="Remove from payment"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -198,12 +279,80 @@ export default function SuppliersTab({
 
             <div style={{ marginTop: 'auto', background: 'var(--bg-input)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-main)' }}>Total Cumulative Supplier Payable</span>
-              <span style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--accent-emerald)' }}>₹{totalSupplierCost.toLocaleString('en-IN')}</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--accent-emerald)' }}>₹{finalTotalPayout.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
         </div>
 
+        {/* ADD BANK ACCOUNT MODAL */}
+        {isAddAccountModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: '500px' }}>
+              <div className="modal-header">
+                <h2>Add Bank Account</h2>
+                <button className="modal-close" onClick={() => setIsAddAccountModalOpen(false)}>×</button>
+              </div>
+              <form onSubmit={handleAddAccount} className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="form-group">
+                  <label className="form-label">Account Holder Name *</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    required
+                    value={newAccountData.accountHolder}
+                    onChange={(e) => setNewAccountData({...newAccountData, accountHolder: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Bank Name *</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    required
+                    value={newAccountData.bankName}
+                    onChange={(e) => setNewAccountData({...newAccountData, bankName: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Account Number *</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    required
+                    value={newAccountData.accountNumber}
+                    onChange={(e) => setNewAccountData({...newAccountData, accountNumber: e.target.value})}
+                  />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group">
+                    <label className="form-label">IFSC Code *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      required
+                      value={newAccountData.ifscCode}
+                      onChange={(e) => setNewAccountData({...newAccountData, ifscCode: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Branch</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      value={newAccountData.branch}
+                      onChange={(e) => setNewAccountData({...newAccountData, branch: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer" style={{ marginTop: '16px' }}>
+                  <button type="button" className="btn btn-secondary" onClick={() => setIsAddAccountModalOpen(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary">Save Account</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

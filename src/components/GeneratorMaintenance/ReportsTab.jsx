@@ -78,7 +78,7 @@ export default function ReportsTab({
             <Printer size={14} /> Print Report
           </button>
           <button className="btn btn-primary btn-sm" onClick={handleExportCSV}>
-            <Download size={14} /> Export CSV
+            <Download size={14} /> Download
           </button>
         </div>
       </div>

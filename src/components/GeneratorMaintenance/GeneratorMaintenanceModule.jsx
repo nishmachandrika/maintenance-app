@@ -39,7 +39,8 @@ export default function GeneratorMaintenanceModule({
   onOpenCloseGenerator,
   onOpenRequestReturn,
   onOpenAddSupplier,
-  onOpenCreatePayment
+  onOpenCreatePayment,
+  onOpenMachineProblem
 }) {
 
   // Top-Level Horizontal Tabs (Checklist removed from top module tabs as requested)
@@ -158,13 +159,16 @@ export default function GeneratorMaintenanceModule({
             onOpenChecklist={onOpenChecklist}
             onOpenCloseGenerator={onOpenCloseGenerator}
             onOpenRequestReturn={onOpenRequestReturn}
+            onOpenMachineProblem={onOpenMachineProblem}
           />
         )}
 
         {activeTab === 'suppliers' && (
           <SuppliersTab
             suppliers={suppliers}
+            setSuppliers={setSuppliers}
             generators={generators}
+            setGenerators={setGenerators}
             paymentRequests={paymentRequests}
             currentUser={currentUser}
             onOpenAddSupplier={onOpenAddSupplier}

@@ -88,7 +88,16 @@ export default function HistoryDetailModal({ log, onClose }) {
               <span className={`badge ${actionInfo.badgeClass}`} style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <ActionIcon size={13} /> {actionInfo.label}
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              <span style={{ 
+                fontFamily: 'var(--font-mono)', 
+                fontSize: '0.75rem', 
+                color: 'var(--text-main)',
+                fontWeight: '700',
+                background: 'var(--bg-input)',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)'
+              }}>
                 {log.id}
               </span>
             </div>
@@ -102,7 +111,7 @@ export default function HistoryDetailModal({ log, onClose }) {
         <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           
           {/* Top Metadata Banner */}
-          <div style={{ background: 'rgba(15, 23, 42, 0.7)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '12px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>
+          <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '12px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>
             <div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase' }}>DATE & TIME</div>
               <div style={{ fontSize: '0.92rem', fontWeight: '700', color: 'var(--accent-cyan)', marginTop: '2px' }}>
@@ -348,7 +357,7 @@ export default function HistoryDetailModal({ log, onClose }) {
         {/* Footer */}
         <div className="modal-footer">
           <button className="btn btn-outline" onClick={handlePrintExport}>
-            <Download size={14} /> Print / Export Record
+            <Download size={14} /> Download
           </button>
           <button className="btn btn-primary" onClick={onClose}>
             Close Window

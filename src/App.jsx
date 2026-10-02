@@ -30,6 +30,7 @@ import CloseGeneratorModal from './components/GeneratorMaintenance/CloseGenerato
 import RequestReturnModal from './components/GeneratorMaintenance/RequestReturnModal';
 import AddSupplierModal from './components/GeneratorMaintenance/AddSupplierModal';
 import CreatePaymentModal from './components/GeneratorMaintenance/CreatePaymentModal';
+import MachineProblemModal from './components/GeneratorMaintenance/MachineProblemModal';
 
 export default function App() {
   // Login Session State
@@ -74,6 +75,8 @@ export default function App() {
   const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
   const [showCreatePaymentModal, setShowCreatePaymentModal] = useState(false);
   const [paymentInitialSupplier, setPaymentInitialSupplier] = useState(null);
+  const [paymentInitialAmount, setPaymentInitialAmount] = useState('');
+  const [generatorForMachineProblem, setGeneratorForMachineProblem] = useState(null);
 
   // Login Handler
   const handleLoginSuccess = (user) => {
@@ -120,9 +123,50 @@ export default function App() {
     setGeneratorForRequestReturn(gen);
   };
 
-  const handleOpenCreatePayment = (supplier = null) => {
+  const handleOpenCreatePayment = (supplier = null, amount = '') => {
     setPaymentInitialSupplier(supplier);
+    setPaymentInitialAmount(amount);
     setShowCreatePaymentModal(true);
+  };
+
+  const handleOpenMachineProblem = (gen) => {
+    setGeneratorForMachineProblem(gen);
+  };
+
+  const handleSaveMachineProblem = (data, mode) => {
+    let updatedGenerators = [...generators];
+    const genIndex = updatedGenerators.findIndex(g => g.id === generatorForMachineProblem.id);
+    if (genIndex === -1) return;
+
+    let targetGen = { ...updatedGenerators[genIndex] };
+    if (!targetGen.machineProblems) targetGen.machineProblems = [];
+
+    if (mode === 'add') {
+      targetGen.machineProblems = [...targetGen.machineProblems, data];
+    } else if (mode === 'resolve') {
+      targetGen.machineProblems = targetGen.machineProblems.map(p => 
+        p.id === data.problemId ? { ...p, endDate: data.endDate } : p
+      );
+    }
+
+    const calculateDays = (start, end) => {
+      const sDate = new Date(start);
+      const eDate = new Date(end);
+      const utc1 = Date.UTC(sDate.getFullYear(), sDate.getMonth(), sDate.getDate());
+      const utc2 = Date.UTC(eDate.getFullYear(), eDate.getMonth(), eDate.getDate());
+      return Math.max(0, Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24)) + 1);
+    };
+
+    let totalNonWorking = 0;
+    targetGen.machineProblems.forEach(p => {
+      totalNonWorking += calculateDays(p.startDate, p.endDate || new Date().toISOString().split('T')[0]);
+    });
+
+    targetGen.nonWorkingDays = totalNonWorking;
+
+    updatedGenerators[genIndex] = targetGen;
+    setGenerators(updatedGenerators);
+    setGeneratorForMachineProblem(null);
   };
 
   // If not logged in, render the login page
@@ -197,6 +241,7 @@ export default function App() {
               onOpenRequestReturn={handleOpenRequestReturn}
               onOpenAddSupplier={handleOpenAddSupplier}
               onOpenCreatePayment={handleOpenCreatePayment}
+              onOpenMachineProblem={handleOpenMachineProblem}
             />
           )}
 
@@ -225,6 +270,8 @@ export default function App() {
           onOpenCloseGenerator={handleOpenCloseGenerator}
           todayActivities={todayActivities}
           historicalLogs={historicalLogs}
+          generators={generators}
+          setGenerators={setGenerators}
         />
       )}
 
@@ -305,8 +352,17 @@ export default function App() {
           setPaymentRequests={setPaymentRequests}
           onOpenAddSupplier={handleOpenAddSupplier}
           initialSupplier={paymentInitialSupplier}
+          initialAmount={paymentInitialAmount}
           historicalLogs={historicalLogs}
           setHistoricalLogs={setHistoricalLogs}
+        />
+      )}
+
+      {generatorForMachineProblem && (
+        <MachineProblemModal
+          generator={generatorForMachineProblem}
+          onClose={() => setGeneratorForMachineProblem(null)}
+          onSave={handleSaveMachineProblem}
         />
       )}
     </div>

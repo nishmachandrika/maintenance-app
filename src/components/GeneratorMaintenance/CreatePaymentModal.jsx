@@ -9,6 +9,7 @@ export default function CreatePaymentModal({
   setPaymentRequests,
   onOpenAddSupplier,
   initialSupplier,
+  initialAmount,
   historicalLogs,
   setHistoricalLogs
 }) {
@@ -25,7 +26,7 @@ export default function CreatePaymentModal({
   const [ifscCode, setIfscCode] = useState(defaultBank.ifscCode || 'HDFC0001234');
   const [upiId, setUpiId] = useState(currentSupplier?.upiIds[0] || 'supplier@upi');
 
-  const [amount, setAmount] = useState('62500');
+  const [amount, setAmount] = useState(initialAmount ? String(initialAmount) : '62500');
   const [remarks, setRemarks] = useState('Advance & monthly usage payout request');
 
   const handleSupplierChange = (supId) => {

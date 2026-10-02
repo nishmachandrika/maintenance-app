@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  MapPin, Layers, Zap, User, ArrowRight, ArrowLeft, Plus, Lock, 
-  CheckCircle2, Eye, Play, ClipboardCheck, ShieldAlert, XCircle, Trash2, Building
+import {
+  MapPin, Layers, Zap, User, ArrowRight, ArrowLeft, Plus, Lock,
+  CheckCircle2, Eye, Play, ClipboardCheck, ShieldAlert, XCircle, Trash2, Building, AlertTriangle
 } from 'lucide-react';
 
 export default function SitesTab({
@@ -16,7 +16,8 @@ export default function SitesTab({
   onOpenChecklist,
   onOpenCloseGenerator,
   onOpenRequestReturn,
-  onOpenAddGenerator
+  onOpenAddGenerator,
+  onOpenMachineProblem
 }) {
   const isSupervisor = currentUser.role === 'supervisor';
   const assignedSite = currentUser.assignedSite;
@@ -108,11 +109,11 @@ export default function SitesTab({
 
   // LEVEL 2: DETAILED DRILLDOWN VIEW FOR A CLICKED SITE
   if (selectedSiteObj) {
-    const siteGens = generators.filter(g => g.site === selectedSiteObj.name);
+    const siteGens = generators.filter(g => g.site === selectedSiteObj.name && g.status !== 'CLOSED / RETURNED');
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        
+
         {/* Back Button & Banner Bar */}
         <div className="filter-bar">
           <button className="btn btn-secondary btn-sm" onClick={() => setSelectedSiteObj(null)}>
@@ -211,7 +212,7 @@ export default function SitesTab({
 
                           {/* Action row inside site drilldown view */}
                           <div className="gen-actions-row">
-                            <button 
+                            <button
                               className="btn btn-outline btn-sm"
                               onClick={() => onOpenGeneratorDetails(gen)}
                             >
@@ -220,19 +221,27 @@ export default function SitesTab({
 
                             {gen.status === 'ACTIVE' && (
                               <>
-                                <button 
+                                <button
                                   className="btn btn-secondary btn-sm"
                                   onClick={() => onOpenDailyEntry(gen)}
                                 >
                                   <Play size={14} /> Daily Entry
                                 </button>
 
-                                <button 
+                                <button
                                   className="btn btn-outline btn-sm"
                                   onClick={() => onOpenChecklist(gen)}
                                   style={{ color: 'var(--accent-cyan)', borderColor: 'var(--border-accent)' }}
                                 >
                                   <ClipboardCheck size={14} /> Checklist
+                                </button>
+                                
+                                <button 
+                                  className="btn btn-outline btn-sm"
+                                  onClick={() => onOpenMachineProblem(gen)}
+                                  style={{ color: 'var(--accent-amber)', borderColor: 'var(--accent-amber)' }}
+                                >
+                                  <AlertTriangle size={14} /> Machine Problem
                                 </button>
                               </>
                             )}
@@ -369,12 +378,12 @@ export default function SitesTab({
 
       <div className="site-cards-grid">
         {visibleSites.map((site) => {
-          const siteGens = generators.filter(g => g.site === site.name);
+          const siteGens = generators.filter(g => g.site === site.name && g.status !== 'CLOSED / RETURNED');
           const activeSiteGens = siteGens.filter(g => g.status === 'ACTIVE').length;
           const supervisorsList = site.sections.map(s => s.supervisor.split(' ')[0] + ' ' + s.supervisor.split(' ')[1]).join(', ');
           return (
-            <div 
-              key={site.id} 
+            <div
+              key={site.id}
               className="table-card site-card-split"
               style={{
                 display: 'grid',
@@ -466,7 +475,7 @@ export default function SitesTab({
                 </div>
 
                 {/* Action Button to Open Site Generators */}
-                <button 
+                <button
                   className="btn btn-primary"
                   style={{ width: '100%', padding: '10px', fontSize: '0.88rem', fontWeight: '700' }}
                   onClick={(e) => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Plus, Clock, CheckCircle2, ArrowRight, DollarSign, Building2, ShieldCheck, Lock, Search, Eye, Filter } from 'lucide-react';
+import { CreditCard, Plus, Clock, CheckCircle2, ArrowRight, DollarSign, Building2, ShieldCheck, Lock, Search, Eye, Filter, Download } from 'lucide-react';
 import PaymentDetailModal from './PaymentDetailModal';
 
 export default function PaymentsTab({
@@ -65,6 +65,21 @@ export default function PaymentsTab({
       return req;
     });
     setPaymentRequests(updated);
+  };
+
+  const exportCSV = () => {
+    const headers = ["Transaction ID", "Supplier Name", "Date", "Status", "Payment Mode", "Total Amount"];
+    const rows = filteredRequests.map(r => [
+      r.id, `"${r.supplierName}"`, r.date, r.status, r.paymentType, r.totalAmount
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `payment_requests_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -185,6 +200,10 @@ export default function PaymentsTab({
           <option value="UPI Transfer">UPI Transfer</option>
           <option value="Advance Cash">Advance Cash</option>
         </select>
+
+        <button className="btn btn-secondary" onClick={exportCSV} style={{ marginLeft: 'auto' }}>
+          <Download size={16} /> Download
+        </button>
       </div>
 
       {/* Payment Requests Master Roster Table */}

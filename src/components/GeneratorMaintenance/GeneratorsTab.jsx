@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Zap, Filter, Eye, Play, ClipboardCheck, XCircle, CheckCircle2, Building2, MapPin, ShieldAlert, Lock } from 'lucide-react';
+import { Search, Plus, Zap, Filter, Eye, Play, ClipboardCheck, XCircle, CheckCircle2, Building2, MapPin, ShieldAlert, Lock, AlertTriangle } from 'lucide-react';
 
 export default function GeneratorsTab({
   generators,
@@ -13,7 +13,8 @@ export default function GeneratorsTab({
   onOpenDailyEntry,
   onOpenChecklist,
   onOpenCloseGenerator,
-  onOpenRequestReturn
+  onOpenRequestReturn,
+  onOpenMachineProblem
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [supplierFilter, setSupplierFilter] = useState('ALL');
@@ -22,6 +23,9 @@ export default function GeneratorsTab({
 
   // Filter logic with RBAC Site-Level Data Isolation
   const filteredGens = generators.filter(gen => {
+    // Hide closed generators completely from this tab
+    if (gen.status === 'CLOSED / RETURNED') return false;
+
     // Strict site isolation for Supervisor
     if (currentUser.role === 'supervisor' && gen.site !== currentUser.assignedSite) {
       return false;
@@ -87,9 +91,9 @@ export default function GeneratorsTab({
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="ALL">All Statuses</option>
+          <option value="ALL">All Active Statuses</option>
           <option value="ACTIVE">ACTIVE Only</option>
-          <option value="CLOSED / RETURNED">CLOSED / RETURNED</option>
+          <option value="STANDBY">STANDBY Only</option>
         </select>
 
         {currentUser.role === 'admin' ? (
@@ -196,6 +200,14 @@ export default function GeneratorsTab({
                         style={{ color: 'var(--accent-cyan)', borderColor: 'var(--border-accent)' }}
                       >
                         <ClipboardCheck size={14} /> Checklist
+                      </button>
+
+                      <button 
+                        className="btn btn-outline btn-sm"
+                        onClick={() => onOpenMachineProblem(gen)}
+                        style={{ color: 'var(--accent-amber)', borderColor: 'var(--accent-amber)' }}
+                      >
+                        <AlertTriangle size={14} /> Machine Problem
                       </button>
 
                       {currentUser.role === 'admin' ? (
