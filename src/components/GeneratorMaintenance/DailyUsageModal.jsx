@@ -101,7 +101,10 @@ export default function DailyUsageModal({
       fanSets: parseInt(fanSetsUsed) || 4,
       dieselLiters: parseFloat(dieselLiters) || 0,
       status: 'Completed',
-      inspector: generator.supervisor
+      inspector: generator.supervisor,
+      startPhoto: startPhotoPreview,
+      stopPhoto: stopPhotoPreview,
+      remarks: remarks
     };
 
     setHistoricalLogs([newHistoryLog, ...historicalLogs]);
