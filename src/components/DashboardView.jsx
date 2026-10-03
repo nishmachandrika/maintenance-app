@@ -216,7 +216,7 @@ export default function DashboardView({
       </div>
 
       {/* 5 & 6. MIDDLE SECTION: GENERATOR ACTIVITY USAGE CHART + QUICK ACTIONS PANEL */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 2fr) minmax(300px, 1fr)', gap: '24px' }}>
+      <div className="dashboard-grid-1">
         
         {/* 5. Generator Usage & Fuel Consumption Chart */}
         <div className="table-card" style={{ padding: '24px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
@@ -362,7 +362,7 @@ export default function DashboardView({
       </div>
 
       {/* 7 & 8. BOTTOM SECTION: SITE-WISE GENERATOR STATUS + RECENT MAINTENANCE ACTIVITY */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 1fr) minmax(420px, 1.4fr)', gap: '24px' }}>
+      <div className="dashboard-grid-2">
         
         {/* 8. Site-Wise Generator Status */}
         <div className="table-card" style={{ padding: '24px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>

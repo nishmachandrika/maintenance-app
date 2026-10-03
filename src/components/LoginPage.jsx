@@ -1,173 +1,332 @@
-import React, { useState } from 'react';
-import { Zap, ShieldCheck, Lock, Mail, ArrowRight, KeyRound, Building2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Zap, 
+  Lock, 
+  Mail, 
+  ArrowRight, 
+  Eye, 
+  EyeOff, 
+  Calendar, 
+  Sun, 
+  Moon, 
+  ChevronDown, 
+  MapPin, 
+  Users, 
+  CreditCard,
+  UserCheck,
+  CheckCircle2,
+  Briefcase
+} from 'lucide-react';
 import { INITIAL_USERS } from '../data/mockData';
+import heroLight1 from '../assets/hero-light-1.png';
+import heroLight2 from '../assets/hero-light-2.png';
+import heroLight3 from '../assets/hero-light-3.png';
+import heroDark1 from '../assets/hero-dark-1.png';
+import heroDark2 from '../assets/hero-dark-2.png';
+import heroDark3 from '../assets/hero-dark-3.png';
 
-export default function LoginPage({ onLoginSuccess, users = INITIAL_USERS }) {
+const LIGHT_IMAGES = [heroLight1, heroLight2, heroLight3];
+const DARK_IMAGES = [heroDark1, heroDark2, heroDark3];
+
+export default function LoginPage({ 
+  onLoginSuccess, 
+  users = INITIAL_USERS,
+  theme = 'dark',
+  setTheme
+}) {
   const userList = users && users.length > 0 ? users : INITIAL_USERS;
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  
+  const [selectedUser, setSelectedUser] = useState(userList[0]);
+  const [email, setEmail] = useState(userList[0].email);
+  const [password, setPassword] = useState('••••••••');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [activeHeroTab, setActiveHeroTab] = useState('generators');
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const isLight = theme === 'light';
+  const currentImages = isLight ? LIGHT_IMAGES : DARK_IMAGES;
+
+  // Reset slide index when theme changes
+  useEffect(() => {
+    setActiveSlide(0);
+  }, [theme]);
+
+  // Automatic background image slideshow (fades every 4 seconds)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % currentImages.length);
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [currentImages.length]);
+
+  // Handle switching user presets
+  const handleSelectUser = (user) => {
+    setSelectedUser(user);
+    setEmail(user.email);
+    setShowUserDropdown(false);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const inputClean = email.trim().toLowerCase();
-    // Match logged in user by email or ID or default to first user
     const matchedUser = userList.find(u => 
       u.email.toLowerCase() === inputClean || u.id.toLowerCase() === inputClean
-    ) || userList[0];
+    ) || selectedUser;
     
     onLoginSuccess(matchedUser);
   };
 
+  const toggleTheme = () => {
+    if (setTheme) {
+      setTheme(theme === 'light' ? 'dark' : 'light');
+    }
+  };
+
+  // Extract initials for circle avatar
+  const initials = selectedUser.name
+    ? selectedUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'SN';
+
+  const userRoleDisplay = selectedUser.role === 'admin' 
+    ? 'Admin' 
+    : selectedUser.role === 'supervisor' 
+      ? 'Supervisor' 
+      : 'Finance';
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      width: '100vw',
-      background: 'radial-gradient(circle at 50% 10%, rgba(30, 41, 78, 0.6) 0%, rgba(11, 15, 25, 1) 70%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Background Glow Accents */}
-      <div style={{
-        position: 'absolute',
-        top: '-150px',
-        left: '-150px',
-        width: '450px',
-        height: '450px',
-        borderRadius: '50%',
-        background: 'rgba(79, 70, 229, 0.15)',
-        filter: 'blur(100px)',
-        pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '-150px',
-        right: '-150px',
-        width: '450px',
-        height: '450px',
-        borderRadius: '50%',
-        background: 'rgba(6, 182, 212, 0.15)',
-        filter: 'blur(100px)',
-        pointerEvents: 'none'
-      }} />
+    <div className={`login-page-wrapper ${isLight ? 'light-mode' : 'dark-mode'}`}>
+      
+      {/* LEFT SHOWCASE PANEL (58% width on desktop) */}
+      <div className="login-left-panel">
+        {/* Generator Facility Background Image Slideshow - strictly contained within left panel */}
+        <div className="slideshow-container">
+          {currentImages.map((imgSrc, idx) => (
+            <img 
+              key={`${theme}-slide-${idx}`}
+              src={imgSrc} 
+              alt={`Generator Facility Background ${idx + 1}`} 
+              className={`login-bg-image ${idx === activeSlide ? 'active' : ''}`}
+            />
+          ))}
+        </div>
 
-      {/* Main Container */}
-      <div style={{
-        width: '100%',
-        maxWidth: '480px',
-        display: 'flex',
-        flexDirection: 'column',
-        zIndex: 10,
-      }} className="login-container">
+        {/* Overlay Tint & Flares */}
+        <div className="login-left-overlay"></div>
+        <div className="login-diagonal-flare flare-top"></div>
+        <div className="login-diagonal-flare flare-bottom"></div>
 
-        {/* RIGHT PANEL: Sign In Box with App Branding Heading at Top */}
-        <div className="table-card" style={{
-          padding: '36px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          gap: '24px',
-          background: 'rgba(15, 23, 42, 0.92)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid var(--border-highlight)',
-          boxShadow: 'var(--shadow-lg)',
-          borderRadius: '24px'
-        }}>
-          
-          {/* APP HEADING BRANDING AT TOP OF SIGN IN SECTION */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
-            <div className="brand-icon-box" style={{ width: '52px', height: '52px', borderRadius: '14px' }}>
-              <Zap size={28} className="text-white" />
+        {/* Slideshow Pagination Indicator Dots */}
+        <div className="slideshow-indicators">
+          {currentImages.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`slideshow-dot ${idx === activeSlide ? 'active' : ''}`}
+              onClick={() => setActiveSlide(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Top-Left Logo & Branding */}
+        <header className="login-left-header">
+          <div className="login-brand-group">
+            <div className="login-brand-icon">
+              <Zap size={18} className="text-white" />
             </div>
             <div>
-              <h1 className="brand-title" style={{ fontSize: '1.65rem' }}>
-                MAINTENANCE APP
+              <h1 className="login-brand-title">
+                MAINTENANCE <span className="brand-accent">APP</span>
               </h1>
-              <p style={{ fontSize: '0.85rem', color: 'var(--accent-cyan)', fontWeight: '600' }}>
-                Enterprise RBAC & Site Data Isolation
+              <p className="login-brand-subtitle">Manage your sites, generators & payments</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Left Showcase Hero Content */}
+        <div className="login-hero-showcase">
+          <div className="hero-tagline">
+            SMART MAINTENANCE &nbsp;&bull;&nbsp; RELIABLE OPERATIONS
+          </div>
+
+          <h2 className="hero-heading">
+            Keep Your Generators <br />
+            <span className="hero-heading-highlight">Running Smoothly</span>
+          </h2>
+
+          <p className="hero-description">
+            Track maintenance, manage sites, handle suppliers and payments — all in one place.
+          </p>
+
+          {/* Bottom Floating Feature Capsule Bar */}
+          <div className="hero-floating-pills">
+            <button 
+              className={`hero-pill ${activeHeroTab === 'generators' ? 'active' : ''}`}
+              onClick={() => setActiveHeroTab('generators')}
+              type="button"
+            >
+              <Briefcase size={18} className="pill-icon" />
+              <span>Generators</span>
+            </button>
+
+            <div className="hero-pill-divider"></div>
+
+            <button 
+              className={`hero-pill ${activeHeroTab === 'sites' ? 'active' : ''}`}
+              onClick={() => setActiveHeroTab('sites')}
+              type="button"
+            >
+              <MapPin size={18} className="pill-icon" />
+              <span>Sites</span>
+            </button>
+
+            <div className="hero-pill-divider"></div>
+
+            <button 
+              className={`hero-pill ${activeHeroTab === 'suppliers' ? 'active' : ''}`}
+              onClick={() => setActiveHeroTab('suppliers')}
+              type="button"
+            >
+              <Users size={18} className="pill-icon" />
+              <span>Suppliers</span>
+            </button>
+
+            <div className="hero-pill-divider"></div>
+
+            <button 
+              className={`hero-pill ${activeHeroTab === 'payments' ? 'active' : ''}`}
+              onClick={() => setActiveHeroTab('payments')}
+              type="button"
+            >
+              <CreditCard size={18} className="pill-icon" />
+              <span>Payments</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT LOGIN FORM PANEL (50% width on desktop) */}
+      <div className="login-right-panel">
+        {/* Top Floating Controls Header */}
+        <header className="login-top-header">
+          <div className="login-header-controls">
+            {/* Theme Toggle Button */}
+            <button 
+              className="login-theme-toggle"
+              onClick={toggleTheme}
+              title={isLight ? 'Switch to Dark Theme' : 'Switch to Light Theme'}
+              type="button"
+              aria-label="Toggle Theme"
+            >
+              {isLight ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
+          </div>
+        </header>
+
+        {/* Centered Login Card Wrapper */}
+        <div className="login-card-container">
+          <div className="login-form-card">
+            
+            <div className="form-intro">
+              <h3 className="form-title">Sign In to Workspace</h3>
+              <p className="form-subtitle">
+                Enter your corporate credentials below to log into your site workspace.
               </p>
             </div>
-          </div>
 
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-light)', fontSize: '0.82rem', fontWeight: '700', letterSpacing: '0.05em' }}>
-              <ShieldCheck size={16} /> SECURE RBAC LOGIN
-            </div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginTop: '4px', color: 'var(--text-main)' }}>
-              Sign In to Workspace
-            </h2>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Enter your corporate credentials below to log into your site workspace.
-            </p>
-          </div>
+            {/* Login Form */}
+            <form onSubmit={handleSubmit} className="login-form">
+              
+              {/* Email Field */}
+              <div className="form-field">
+                <label htmlFor="email" className="field-label">Corporate Email Address</label>
+                <div className="input-wrapper">
+                  <Mail size={16} className="input-icon" />
+                  <input 
+                    id="email"
+                    type="email"
+                    className="login-input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@company.com"
+                    required
+                  />
+                </div>
+              </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            <div className="form-group">
-              <label className="form-label">Corporate Email Address</label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-dim)' }} />
-                <input
-                  type="email"
-                  className="form-input"
-                  style={{ paddingLeft: '42px' }}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@company.com"
-                  required
-                />
+              {/* Password Field */}
+              <div className="form-field">
+                <div className="field-label-row">
+                  <label htmlFor="password" className="field-label">Password</label>
+                  <a href="#forgot" onClick={(e) => e.preventDefault()} className="forgot-link">
+                    Forgot password?
+                  </a>
+                </div>
+                <div className="input-wrapper">
+                  <Lock size={16} className="input-icon" />
+                  <input 
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    className="login-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button 
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember Me Checkbox */}
+              <div className="checkbox-row">
+                <label className="custom-checkbox-label">
+                  <input 
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="hidden-checkbox"
+                  />
+                  <span className="checkbox-box">
+                    {rememberMe && (
+                      <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="3" fill="none">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    )}
+                  </span>
+                  <span className="checkbox-text">Remember login session</span>
+                </label>
+              </div>
+
+              {/* Submit Button */}
+              <button type="submit" className="login-submit-btn">
+                <span>Sign In to Maintenance Portal</span>
+                <ArrowRight size={16} className="btn-arrow" />
+              </button>
+            </form>
+
+            {/* Bottom Security Callout Banner */}
+            <div className="security-callout">
+              <UserCheck size={16} className="security-icon" />
+              <div className="security-text">
+                <strong className="security-highlight">Role Access Controlled/Enforced</strong> &ndash; Site data isolation active for {userRoleDisplay} login.
               </div>
             </div>
 
-            <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label className="form-label">Password</label>
-                <span style={{ fontSize: '0.75rem', color: 'var(--primary-light)', cursor: 'pointer' }}>Forgot password?</span>
-              </div>
-              <div style={{ position: 'relative' }}>
-                <KeyRound size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-dim)' }} />
-                <input
-                  type="password"
-                  className="form-input"
-                  style={{ paddingLeft: '42px' }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  required
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--text-muted)' }}>
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  style={{ accentColor: 'var(--primary)' }}
-                />
-                Remember login session
-              </label>
-            </div>
-
-            <button type="submit" className="btn btn-primary" style={{ padding: '13px', fontSize: '0.95rem', fontWeight: '700', marginTop: '6px', justifyContent: 'center' }}>
-              Sign In to Maintenance Portal <ArrowRight size={18} />
-            </button>
-          </form>
-
-          <div style={{ background: 'rgba(0,0,0,0.35)', padding: '12px 16px', borderRadius: '12px', fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Lock size={16} style={{ color: 'var(--accent-emerald)', flexShrink: 0 }} />
-            <div>
-              <strong>Role Access Control Enforced:</strong> Site data isolation active for Supervisor logins.
-            </div>
           </div>
-
         </div>
 
       </div>
+
     </div>
   );
 }

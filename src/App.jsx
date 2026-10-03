@@ -34,11 +34,12 @@ import MachineProblemModal from './components/GeneratorMaintenance/MachineProble
 
 export default function App() {
   // Login Session State
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(INITIAL_USERS[0]); // Default Admin persona
 
   // Main Module Navigation (SINGLE SIDEBAR): 'dashboard' | 'generator-maintenance' | 'recharge-subscriptions' | 'user-management'
   const [activeModule, setActiveModule] = useState('generator-maintenance');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Generator Maintenance Module Horizontal Tabs: 'overview' | 'sites' | 'generators' | 'suppliers' | 'history' | 'payments' | 'reports'
   const [activeTab, setActiveTab] = useState('overview');
@@ -171,18 +172,31 @@ export default function App() {
 
   // If not logged in, render the login page
   if (!isLoggedIn) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} users={users} />;
+    return <LoginPage onLoginSuccess={handleLoginSuccess} users={users} theme={theme} setTheme={setTheme} />;
   }
 
   return (
     <div className="app-container">
+      {/* MOBILE SIDEBAR OVERLAY */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="sidebar-overlay" 
+          onClick={() => setIsMobileSidebarOpen(false)}
+        ></div>
+      )}
+
       {/* SINGLE PRIMARY SIDEBAR (Only Major Modules) */}
       <Sidebar 
         activeModule={activeModule}
-        setActiveModule={setActiveModule}
+        setActiveModule={(mod) => {
+          setActiveModule(mod);
+          setIsMobileSidebarOpen(false);
+        }}
         userRole={userRole}
         currentUser={currentUser}
         onLogout={handleLogout}
+        isOpen={isMobileSidebarOpen}
+        setIsOpen={setIsMobileSidebarOpen}
       />
 
       {/* MAIN WRAPPER */}
@@ -199,6 +213,7 @@ export default function App() {
           setCurrentUser={setCurrentUser}
           theme={theme}
           setTheme={setTheme}
+          onMenuClick={() => setIsMobileSidebarOpen(true)}
         />
 
         <main className="content-container">

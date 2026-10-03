@@ -1,12 +1,13 @@
 import React from 'react';
-import { ChevronRight, Bell, Home, Shield, User, Sun, Moon } from 'lucide-react';
+import { ChevronRight, Bell, Home, Shield, User, Sun, Moon, Menu } from 'lucide-react';
 
 export default function Header({ 
   activeModule, 
   activeTab, 
   currentUser,
   theme,
-  setTheme
+  setTheme,
+  onMenuClick
 }) {
   const getModuleLabel = () => {
     if (activeModule === 'generator-maintenance') return 'Generator Maintenance';
@@ -27,12 +28,19 @@ export default function Header({
 
   return (
     <header className="top-bar">
-      {/* Left: Modern Breadcrumbs */}
+      {/* Left: Modern Breadcrumbs & Hamburger Menu */}
       <div className="top-bar-left">
+        <button 
+          className="mobile-menu-btn" 
+          onClick={onMenuClick}
+        >
+          <Menu size={20} />
+        </button>
+
         <nav className="header-breadcrumbs">
           <div className="crumb-item">
             <Home size={14} className="crumb-icon" />
-            <span>Main App</span>
+            <span className="hide-on-mobile">Main App</span>
           </div>
 
           <ChevronRight size={14} className="crumb-separator" />

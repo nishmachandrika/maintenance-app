@@ -1,7 +1,7 @@
 import React from 'react';
-import { LayoutDashboard, Zap, CreditCard, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, Zap, CreditCard, Users, LogOut, X } from 'lucide-react';
 
-export default function Sidebar({ activeModule, setActiveModule, currentUser, onLogout }) {
+export default function Sidebar({ activeModule, setActiveModule, currentUser, onLogout, isOpen, setIsOpen }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'generator-maintenance', label: 'Generator Maintenance', icon: Zap },
@@ -16,15 +16,25 @@ export default function Sidebar({ activeModule, setActiveModule, currentUser, on
   });
 
   return (
-    <aside className="main-sidebar">
+    <aside className={`main-sidebar ${isOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
-        <div className="brand-icon-box">
-          <Zap size={22} className="text-white" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+          <div className="brand-icon-box">
+            <Zap size={22} className="text-white" />
+          </div>
+          <div>
+            <div className="brand-title">MAINTENANCE APP</div>
+            <div className="brand-subtitle">Enterprise Operations</div>
+          </div>
         </div>
-        <div>
-          <div className="brand-title">MAINTENANCE APP</div>
-          <div className="brand-subtitle">Enterprise Operations</div>
-        </div>
+        
+        {/* Mobile Close Button */}
+        <button 
+          className="sidebar-close-btn" 
+          onClick={() => setIsOpen(false)}
+        >
+          <X size={20} />
+        </button>
       </div>
 
       <nav className="sidebar-nav">
@@ -45,7 +55,7 @@ export default function Sidebar({ activeModule, setActiveModule, currentUser, on
         })}
       </nav>
 
-      <div className="sidebar-footer" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '10px' }}>
+      <div className="sidebar-footer">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div className="user-avatar" style={{ background: currentUser.badgeColor }}>
             {currentUser.avatar}
@@ -62,7 +72,7 @@ export default function Sidebar({ activeModule, setActiveModule, currentUser, on
         </div>
 
         <button 
-          className="btn btn-outline btn-sm" 
+          className="btn btn-outline btn-sm logout-btn" 
           onClick={onLogout}
           style={{ width: '100%', padding: '6px 10px', fontSize: '0.78rem', justifyContent: 'center' }}
         >
